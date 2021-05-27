@@ -18,6 +18,20 @@ import java.util.Map;
 
 @Service
 public class UtilFunctions {
+    
+    enum Algorithms{
+        HASH1("SHA-256"), HASH2("MD-5");
+        String retString;
+        Algorithms(String retString){
+            this.retString  = retString;
+        }
+        Algorithms(){
+            this.retString = "No Algo Taken";
+        }
+        public String getString(){
+            return this.retString;
+        }
+    }
 
     @Autowired EmployeeRepository employeeRepository;
     @Value("${jwt.secret}")
@@ -36,7 +50,7 @@ public class UtilFunctions {
 
     public String hashedPassword(String password){
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest digest = MessageDigest.getInstance(Algorithms.HASH1.getString());
             byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
             return bytesToHex(encodedHash);
         }catch (NoSuchAlgorithmException e){
