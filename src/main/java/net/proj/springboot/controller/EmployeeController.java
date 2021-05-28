@@ -1,8 +1,7 @@
 package net.proj.springboot.controller;
 import net.proj.springboot.loginEmployee.EmployeeEntry;
 import net.proj.springboot.loginEmployee.GetEmployee;
-import net.proj.springboot.loginEmployee.ReturnEmployee;
-import net.proj.springboot.loginEmployee.ReturnEmployeeWithToken;
+import net.proj.springboot.loginEmployee.StatusResponse;
 import net.proj.springboot.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,7 @@ public class EmployeeController {
     EmployeeService employeeService;
 
     @RequestMapping(method = RequestMethod.POST,value = "/signup")
-    public ResponseEntity<ReturnEmployee> signup(@RequestBody EmployeeEntry e){
+    public ResponseEntity<StatusResponse> signup(@RequestBody EmployeeEntry e){
         return employeeService.signup(e);
     }
 
@@ -34,7 +33,7 @@ public class EmployeeController {
     }
 
     @RequestMapping(method = RequestMethod.PUT,value = "/{id}")
-    public ResponseEntity<ReturnEmployee> updateEmployee(@PathVariable Long id,@RequestBody EmployeeEntry employeeEntry){
+    public ResponseEntity<StatusResponse> updateEmployee(@PathVariable Long id, @RequestBody EmployeeEntry employeeEntry){
         return employeeService.updateEmployee(id, employeeEntry);
     }
 

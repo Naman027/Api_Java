@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Service
 public class UtilFunctions {
-    
+
     enum Algorithms{
         HASH1("SHA-256"), HASH2("MD-5");
         String retString;
@@ -48,6 +48,13 @@ public class UtilFunctions {
                 .signWith(SignatureAlgorithm.HS256, secret).compact();
     }
 
+    // generate new token
+
+
+    // database save token
+
+
+
     public String hashedPassword(String password){
         try {
             MessageDigest digest = MessageDigest.getInstance(Algorithms.HASH1.getString());
@@ -70,12 +77,6 @@ public class UtilFunctions {
         return hexString.toString();
     }
 
-    public void savingEmployee(@RequestBody EmployeeEntry ep){
-        Employee newEmployee = new Employee();
-        newEmployee.setEmail(ep.getEmailId());
-        newEmployee.setPassword(ep.getPassword());
-        newEmployee.setName(ep.getUserName());
-        employeeRepository.save(newEmployee);
-    }
+
 
 }

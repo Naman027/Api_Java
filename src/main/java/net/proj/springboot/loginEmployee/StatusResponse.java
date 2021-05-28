@@ -1,7 +1,7 @@
 package net.proj.springboot.loginEmployee;
 import javax.persistence.Entity;
 
-public class ReturnEmployee {
+public class StatusResponse {
     private String status;
     private Integer statusCode;
 

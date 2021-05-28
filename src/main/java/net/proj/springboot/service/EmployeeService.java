@@ -2,10 +2,11 @@ package net.proj.springboot.service;
 import net.proj.springboot.exception.ResourceNotFoundException;
 import net.proj.springboot.loginEmployee.EmployeeEntry;
 import net.proj.springboot.loginEmployee.GetEmployee;
-import net.proj.springboot.loginEmployee.ReturnEmployee;
+import net.proj.springboot.loginEmployee.StatusResponse;
 import net.proj.springboot.loginEmployee.ReturnEmployeeWithToken;
 import net.proj.springboot.model.Employee;
 import net.proj.springboot.repository.EmployeeRepository;
+import net.proj.springboot.utility.TranFormUtil;
 import net.proj.springboot.utility.UtilFunctions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,36 +21,37 @@ import java.util.List;
 public class EmployeeService {
     @Autowired public EmployeeRepository employeeRepo;
     @Autowired UtilFunctions utilFunctions;
+    @Autowired TranFormUtil tranFormUtil;
 
-    public ResponseEntity<ReturnEmployee> signup(@RequestBody EmployeeEntry employeeEntry){
-        ReturnEmployee res = new ReturnEmployee();
+    public ResponseEntity<StatusResponse> signup(@RequestBody EmployeeEntry employeeEntry){
+        StatusResponse res = new StatusResponse();
         Employee employee = employeeRepo.findByEmailId(employeeEntry.getEmailId());
         if(employee==null){
             String hashPassWord = utilFunctions.hashedPassword(employeeEntry.getPassword());
             employeeEntry.setPassword(hashPassWord);
-            utilFunctions.savingEmployee(employeeEntry);
+            Employee employeeToBeStored = tranFormUtil.savingEmployee(employeeEntry);
+            employeeRepo.save(employeeToBeStored);
             res.setStatus("Successfully Signed In");
             res.setStatusCode(1200);
-            return new ResponseEntity<ReturnEmployee>(res,HttpStatus.OK);
+            return new ResponseEntity<StatusResponse>(res,HttpStatus.OK);
         }
         else{
-            System.out.println(employee.getPassword());
             res.setStatus("User Already Exists");
             res.setStatusCode(1208);
-            return new ResponseEntity<ReturnEmployee>(res, HttpStatus.ALREADY_REPORTED);
+            return new ResponseEntity<StatusResponse>(res, HttpStatus.ALREADY_REPORTED);
         }
     }
 
     public ResponseEntity<?> login(@RequestBody EmployeeEntry employeeEntry){
-        ReturnEmployee res = new ReturnEmployee();
+        StatusResponse res = new StatusResponse();
         Employee employee = employeeRepo.findByEmailId(employeeEntry.getEmailId());
         if(employee==null){
             res.setStatus("Employee doesn't exists");
             res.setStatusCode(1404);
-            return new ResponseEntity<ReturnEmployee>(res,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<StatusResponse>(res,HttpStatus.NOT_FOUND);
         }
         else{
-            String hashPassword = utilFunctions.hashedPassword(employee.getPassword());
+            String hashPassword = employee.getPassword();
             String inputHashPassword = utilFunctions.hashedPassword(employeeEntry.getPassword());
             if(hashPassword.equals(inputHashPassword)){
                 ReturnEmployeeWithToken resToken = new ReturnEmployeeWithToken();
@@ -62,7 +64,7 @@ public class EmployeeService {
             else{
                 res.setStatus("Password Incorrect");
                 res.setStatusCode(1400);
-                return new ResponseEntity<ReturnEmployee>(res,HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<StatusResponse>(res,HttpStatus.BAD_REQUEST);
             }
         }
     }
@@ -78,17 +80,17 @@ public class EmployeeService {
         return new ResponseEntity<GetEmployee>(res,HttpStatus.OK);
     }
 
-    public ResponseEntity<ReturnEmployee> updateEmployee(@PathVariable Long id,@RequestBody EmployeeEntry employeeEntry){
+    public ResponseEntity<StatusResponse> updateEmployee(@PathVariable Long id, @RequestBody EmployeeEntry employeeEntry){
         // findById(id) returns an optional employee hence we need a orElseThrow to see if the employee doesn't exist in the database.
         Employee employee = employeeRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Employee Not exists with id : "+id));
         if(employeeEntry.getEmailId()!=null) employee.setEmail(employeeEntry.getEmailId());
         if(employeeEntry.getPassword()!=null) employee.setPassword(employeeEntry.getPassword());
         if(employeeEntry.getUserName()!=null) employee.setName(employeeEntry.getUserName());
         employeeRepo.save(employee);
-        ReturnEmployee res = new ReturnEmployee();
+        StatusResponse res = new StatusResponse();
         res.setStatusCode(1900);
         res.setStatus("Employee Successfully Updated");
-        return new ResponseEntity<ReturnEmployee>(res,HttpStatus.ACCEPTED);
+        return new ResponseEntity<StatusResponse>(res,HttpStatus.ACCEPTED);
     }
 
     public ResponseEntity<HashMap<String, Long>> deleteEmployee(@PathVariable Long id){
