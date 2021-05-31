@@ -1,27 +1,37 @@
 package net.proj.springboot.service;
+import com.fasterxml.uuid.Generators;
 import net.proj.springboot.exception.ResourceNotFoundException;
 import net.proj.springboot.loginEmployee.EmployeeEntry;
-import net.proj.springboot.loginEmployee.GetEmployee;
+import net.proj.springboot.loginEmployee.EmployeeResponse;
 import net.proj.springboot.loginEmployee.StatusResponse;
 import net.proj.springboot.loginEmployee.ReturnEmployeeWithToken;
 import net.proj.springboot.model.Employee;
+import net.proj.springboot.model.EmployeeSessions;
+import net.proj.springboot.model.JwtToken;
 import net.proj.springboot.repository.EmployeeRepository;
+import net.proj.springboot.repository.EmployeeSessionRepository;
+import net.proj.springboot.repository.JwtRepository;
 import net.proj.springboot.utility.TranFormUtil;
 import net.proj.springboot.utility.UtilFunctions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import java.util.HashMap;
-import java.util.List;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class EmployeeService {
     @Autowired public EmployeeRepository employeeRepo;
     @Autowired UtilFunctions utilFunctions;
     @Autowired TranFormUtil tranFormUtil;
+    @Autowired JwtRepository jwtRepository;
+    @Autowired EmployeeSessionRepository employeeSessionRepository;
 
     public ResponseEntity<StatusResponse> signup(@RequestBody EmployeeEntry employeeEntry){
         StatusResponse res = new StatusResponse();
@@ -57,8 +67,28 @@ public class EmployeeService {
                 ReturnEmployeeWithToken resToken = new ReturnEmployeeWithToken();
                 resToken.setStatus("Successfully logged in");
                 resToken.setStatusCode(1200);
-                String token = utilFunctions.generateToken(employeeEntry);
+                String token = utilFunctions.generateToken(employeeEntry.getEmailId());
                 resToken.setToken(token);
+
+                JwtToken jwtToken = new JwtToken();
+                jwtToken.setEmailId(employee.getEmail());
+
+                //UUID uuid = UUID.randomUUID();
+                //System.out.println(uuid);
+                UUID uuid = Generators.timeBasedGenerator().generate();
+                EmployeeSessions employeeSessions = new EmployeeSessions();
+                employeeSessions.setEmailId(employee.getEmail());
+                employeeSessions.setDateId(uuid.toString());
+                employeeSessionRepository.save(employeeSessions);
+
+//                Date timeOfJoining = Calendar.getInstance().getTime();
+//                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+//                String dateId = dateFormat.format(timeOfJoining);
+//                EmployeeSessions employeeSessions = new EmployeeSessions();
+//                employeeSessions.setEmailId(employee.getEmail());
+//                employeeSessions.setDateId(dateId);
+//                System.out.println(dateId);
+//                employeeSessionRepository.save(employeeSessions);
                 return new ResponseEntity<ReturnEmployeeWithToken>(resToken, HttpStatus.valueOf(200));
             }
             else{
@@ -69,15 +99,19 @@ public class EmployeeService {
         }
     }
 
-    public ResponseEntity<GetEmployee> getEmployeeById(@PathVariable Long id){
+    public ResponseEntity<?> refreshToken(String token) {
+        return utilFunctions.isLoggedIn(token);
+    }
+
+    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id){
         Employee employee;
         employee = employeeRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Employee Not exists with id : " + id));
-        GetEmployee res = new GetEmployee();
+        EmployeeResponse res = new EmployeeResponse();
         res.setStatusCode(1800);
         res.setStatus("Got the Employee");
         res.setEmailId(employee.getEmail());
         res.setUserName(employee.getName());
-        return new ResponseEntity<GetEmployee>(res,HttpStatus.OK);
+        return new ResponseEntity<EmployeeResponse>(res,HttpStatus.OK);
     }
 
     public ResponseEntity<StatusResponse> updateEmployee(@PathVariable Long id, @RequestBody EmployeeEntry employeeEntry){
@@ -109,6 +143,7 @@ public class EmployeeService {
         List<Employee> employees = employeeRepo.findAll();
         for(Employee e:employees) employeeRepo.delete(e);
     }
+
 }
 
 

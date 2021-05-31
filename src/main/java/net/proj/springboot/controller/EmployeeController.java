@@ -1,6 +1,6 @@
 package net.proj.springboot.controller;
 import net.proj.springboot.loginEmployee.EmployeeEntry;
-import net.proj.springboot.loginEmployee.GetEmployee;
+import net.proj.springboot.loginEmployee.EmployeeResponse;
 import net.proj.springboot.loginEmployee.StatusResponse;
 import net.proj.springboot.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +27,13 @@ public class EmployeeController {
         return employeeService.login(e);
     }
 
+    @RequestMapping(method = RequestMethod.GET,value = "/refreshToken/{token}")
+    public ResponseEntity<?> refreshToken(@PathVariable String token){
+        return employeeService.refreshToken(token);
+    }
+
     @RequestMapping(method = RequestMethod.GET,value = "/{id}")
-    public ResponseEntity<GetEmployee> getEmployeeById(@PathVariable  Long id){
+    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable  Long id){
         return employeeService.getEmployeeById(id);
     }
 
@@ -52,3 +57,5 @@ public class EmployeeController {
         employeeService.clearDatabase();
     }
 }
+
+

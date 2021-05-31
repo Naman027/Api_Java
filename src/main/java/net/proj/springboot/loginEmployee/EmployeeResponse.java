@@ -1,7 +1,7 @@
 package net.proj.springboot.loginEmployee;
 import javax.persistence.Entity;
 
-public class GetEmployee extends StatusResponse {
+public class EmployeeResponse extends StatusResponse {
     private String userName;
     private String emailId;
 

@@ -13,12 +13,17 @@ public class GlobalExceptionHandler {
         ErrorDetails errorDetails = new ErrorDetails(exception.getMessage());
         return new ResponseEntity<ErrorDetails>(errorDetails,HttpStatus.NOT_FOUND);
     }
-
+    
     @ExceptionHandler(Exception.class) // Handle the specific exception
     public ResponseEntity<ErrorDetails> ExceptionHandler(Exception exception){
         ErrorDetails errorDetails = new ErrorDetails(exception.getMessage());
         return new ResponseEntity<ErrorDetails>(errorDetails,HttpStatus.NOT_FOUND);
     }
+
+//    @ExceptionHandler(GenericException.class)
+//    public ResponseEntity<ErrorDetails> GenericHandler(Exception exception){
+//
+//    }
 
     @ExceptionHandler(NoSuchAlgorithmException.class)
     public String NoSuchAlgorithmException(NoSuchAlgorithmException exception){
